@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Biblify
+ * Plugin Name: Bible Reflinker
  * Plugin URI:
  * Description: Automatically converts Bible references into external bible links
- * Version: 0.1
+ * Version: 0.2
  * Author: Chris Burgess
  * Author URI:
  * License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -11,6 +11,6 @@
 
 defined( 'ABSPATH' ) or die();
 
-require_once dirname( __FILE__ ) . '/class-biblify.php';
+require_once dirname(__FILE__) . '/class-bible-reflinker.php';
 
-new Biblify();
+new Bible_Reflinker();

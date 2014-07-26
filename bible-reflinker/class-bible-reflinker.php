@@ -8,22 +8,22 @@
 
 defined( 'ABSPATH' ) or die();
 
-class Biblify {
+class Bible_Reflinker {
     protected $ignoreList = array();
 
     public function __construct() {
         add_action( 'init', array( $this, 'register_shortcodes' ) );
         // bump this priority to be after the shortcode is handled
-        add_filter( 'the_content', array( $this, 'biblify' ), 11 );
+        add_filter( 'the_content', array( $this, 'reflinker' ), 11 );
     }
 
     public function register_shortcodes() {
-        add_shortcode( 'biblify-ignore', array( $this, 'add_ignore' ) );
-        add_shortcode( 'biblify', array( $this, 'force_biblify' ) );
+        add_shortcode( 'bibleref-ignore', array( $this, 'add_ignore' ) );
+        add_shortcode( 'bibleref', array( $this, 'force_reflinker' ) );
     }
 
     /**
-     * Handle biblify-ignore shortcode
+     * Handle bibleref-ignore shortcode
      * @param $attr
      * @param null $content
      * @return null
@@ -37,12 +37,12 @@ class Biblify {
     }
 
     /**
-     * Handle biblify shortcode
+     * Handle bibleref shortcode
      * @param $attr
      * @param null $content
      * @return null|string
      */
-    public function force_biblify( $attr, $content = null ) {
+    public function force_reflinker( $attr, $content = null ) {
         if ( $content !== null ) {
             return $this->get_link( $content );
         }
@@ -50,11 +50,11 @@ class Biblify {
     }
 
     /**
-     * Run the auto biblify on the given content
+     * Run the auto reflinker on the given content
      * @param $content
      * @return mixed
      */
-    public function biblify( $content ) {
+    public function reflinker( $content ) {
         return preg_replace_callback( '%(\b(?:' .
             'Ge|Gn|Gen|Genesis' .
             '|Ex|Exo|Exod|Exodus' .
@@ -123,12 +123,12 @@ class Biblify {
             '|Jude|Jud' .
             '|Revelation|Rev|Re' .
             ')\b(?:\s+\d+)(?:(?::\d+[a-c]?)?(?:[-–]\d+[a-c]?)?(?:[,-–]\d+[a-c]?(?::\d+[a-c]?)?(?:[-–]\d+[a-c]?)?)*)?)%i',
-            array( $this, 'biblify_text' ),
+            array( $this, 'reflinker_text' ),
             $content
         );
     }
 
-    protected function biblify_text( $matches ) {
+    protected function reflinker_text( $matches ) {
         if ( in_array( $matches[0], $this->ignoreList ) ) {
             return $matches[0];
         } else {

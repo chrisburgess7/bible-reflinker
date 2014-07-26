@@ -14,18 +14,18 @@ function add_action( $action, $callback ) {}
 function add_filter( $action, $callback, $priority ) {}
 function add_shortcode( $tag, $callback ) {}
 
-require_once dirname( __FILE__ ) . '/../biblify/class-biblify.php';
+require_once dirname(__FILE__) . '/../bible-reflinker/class-bible-reflinker.php';
 
-class BiblifyTest extends PHPUnit_Framework_TestCase {
+class Bible_ReflinkerTest extends PHPUnit_Framework_TestCase {
 
-    /** @var $sut Biblify */
+    /** @var $sut Bible_Reflinker */
     protected $sut;
 
     public function setUp() {
-        $this->sut = new Biblify();
+        $this->sut = new Bible_Reflinker();
     }
 
-    public static function dataBiblify() {
+    public static function dataReflinker() {
         $passages = array(
             'Genesis 1', 'Ge 1:2-4a', 'Gen 27:12b-16', 'Gn 3',
 'Exodus 3:1-2', 'Exod 5', 'Exo 7:1b', 'Ex 24:1-4,5-7',
@@ -106,30 +106,30 @@ class BiblifyTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @dataProvider dataBiblify
+     * @dataProvider dataReflinker
      * @param $content
      * @param $result
      */
-    public function testBiblify( $content, $result ) {
-        $actual = $this->sut->biblify( $content );
+    public function testReflinker( $content, $result ) {
+        $actual = $this->sut->reflinker( $content );
         $this->assertEquals( $result, $actual );
     }
 
-    public function testForceBiblify() {
+    public function testForceReflinker() {
         // Is isn't automatically converted for Isaiah as it's too common
         $content = 'Is 2:4';
-        $actual = $this->sut->force_biblify( array(), $content );
+        $actual = $this->sut->force_reflinker( array(), $content );
         $this->assertEquals(
             $this->createLink( $content ),
             $actual
         );
     }
 
-    public function testBiblifyIgnore() {
+    public function testReflinkerIgnore() {
         $content = 'Here is some text to ignore PHP 5';
 
         // test that we add the link first
-        $result = $this->sut->biblify( $content );
+        $result = $this->sut->reflinker( $content );
         $this->assertEquals(
             'Here is some text to ignore ' . $this->createLink('PHP 5'),
             $result
@@ -139,7 +139,7 @@ class BiblifyTest extends PHPUnit_Framework_TestCase {
         $this->sut->add_ignore( array(), 'PHP 5' );
 
         // test that this time we get the string without the link
-        $result = $this->sut->biblify( $content );
+        $result = $this->sut->reflinker( $content );
         $this->assertEquals( $content, $result );
     }
 
