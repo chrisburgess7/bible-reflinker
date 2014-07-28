@@ -8,18 +8,13 @@
 
 defined( 'ABSPATH' ) or die();
 
-class Bible_Reflinker {
+class BBRF_Linker {
     protected $ignoreList = array();
 
-    public function __construct() {
-        add_action( 'init', array( $this, 'register_shortcodes' ) );
-        // bump this priority to be after the shortcode is handled
-        add_filter( 'the_content', array( $this, 'reflinker' ), 11 );
-    }
+    protected $version = 'NIV';
 
-    public function register_shortcodes() {
-        add_shortcode( 'bibleref-ignore', array( $this, 'add_ignore' ) );
-        add_shortcode( 'bibleref', array( $this, 'force_reflinker' ) );
+    public function set_bible_version( $version ) {
+        $this->version = $version;
     }
 
     /**
@@ -42,7 +37,7 @@ class Bible_Reflinker {
      * @param null $content
      * @return null|string
      */
-    public function force_reflinker( $attr, $content = null ) {
+    public function force_link( $attr, $content = null ) {
         if ( $content !== null ) {
             return $this->get_link( $content );
         }
@@ -54,7 +49,7 @@ class Bible_Reflinker {
      * @param $content
      * @return mixed
      */
-    public function reflinker( $content ) {
+    public function link( $content ) {
         return preg_replace_callback( '%(\b(?:' .
             'Ge|Gn|Gen|Genesis' .
             '|Ex|Exo|Exod|Exodus' .
@@ -123,12 +118,12 @@ class Bible_Reflinker {
             '|Jude|Jud' .
             '|Revelation|Rev|Re' .
             ')\b(?:\s+\d+)(?:(?::\d+[a-c]?)?(?:[-–]\d+[a-c]?)?(?:[,-–]\d+[a-c]?(?::\d+[a-c]?)?(?:[-–]\d+[a-c]?)?)*)?)%i',
-            array( $this, 'reflinker_text' ),
+            array( $this, 'get_link_text' ),
             $content
         );
     }
 
-    protected function reflinker_text( $matches ) {
+    protected function get_link_text( $matches ) {
         if ( in_array( $matches[0], $this->ignoreList ) ) {
             return $matches[0];
         } else {
@@ -137,6 +132,11 @@ class Bible_Reflinker {
     }
 
     protected function get_link( $bibleref ) {
-        return sprintf( '<a href="http://www.biblegateway.com/passage/?search=%s&version=NIVUK" class="bibleref">%s</a>', urlencode( $bibleref ), $bibleref );
+        return sprintf(
+            '<a href="http://www.biblegateway.com/passage/?search=%s&version=%s" class="bibleref">%s</a>',
+            urlencode( $bibleref ),
+            $this->version,
+            $bibleref
+        );
     }
 }

@@ -13,16 +13,18 @@ define( 'ABSPATH', 'fakepath' );
 function add_action( $action, $callback ) {}
 function add_filter( $action, $callback, $priority ) {}
 function add_shortcode( $tag, $callback ) {}
+function is_admin() { return false; }
 
-require_once dirname(__FILE__) . '/../bible-reflinker/class-bible-reflinker.php';
+require_once dirname(__FILE__) . '/../bible-reflinker/class-linker.php';
 
-class Bible_ReflinkerTest extends PHPUnit_Framework_TestCase {
+class BBRF_LinkerTest extends PHPUnit_Framework_TestCase {
 
-    /** @var $sut Bible_Reflinker */
+    /** @var $sut BBRF_Linker */
     protected $sut;
 
     public function setUp() {
-        $this->sut = new Bible_Reflinker();
+        $this->sut = new BBRF_Linker();
+        $this->sut->set_bible_version( 'NIVUK' );
     }
 
     public static function dataReflinker() {
@@ -95,14 +97,14 @@ class Bible_ReflinkerTest extends PHPUnit_Framework_TestCase {
 
         $tests = array();
         foreach ( $passages as $passage ) {
-            $tests[] = array( $passage, self::createLink( $passage ) );
+            $tests[] = array( $passage, self::createLink( $passage, 'NIVUK' ) );
         }
 
         return $tests;
     }
 
-    protected static function createLink( $bibleref ) {
-        return sprintf( '<a href="http://www.biblegateway.com/passage/?search=%s&version=NIVUK" class="bibleref">%s</a>', urlencode( $bibleref ), $bibleref );
+    protected static function createLink( $bibleref, $bibleVersion ) {
+        return sprintf( '<a href="http://www.biblegateway.com/passage/?search=%s&version=%s" class="bibleref">%s</a>', urlencode( $bibleref ), $bibleVersion, $bibleref );
     }
 
     /**
@@ -110,28 +112,28 @@ class Bible_ReflinkerTest extends PHPUnit_Framework_TestCase {
      * @param $content
      * @param $result
      */
-    public function testReflinker( $content, $result ) {
-        $actual = $this->sut->reflinker( $content );
+    public function testLink( $content, $result ) {
+        $actual = $this->sut->link( $content );
         $this->assertEquals( $result, $actual );
     }
 
-    public function testForceReflinker() {
+    public function testForceLink() {
         // Is isn't automatically converted for Isaiah as it's too common
         $content = 'Is 2:4';
-        $actual = $this->sut->force_reflinker( array(), $content );
+        $actual = $this->sut->force_link( array(), $content );
         $this->assertEquals(
-            $this->createLink( $content ),
+            $this->createLink( $content, 'NIVUK' ),
             $actual
         );
     }
 
-    public function testReflinkerIgnore() {
+    public function testAddIgnore() {
         $content = 'Here is some text to ignore PHP 5';
 
         // test that we add the link first
-        $result = $this->sut->reflinker( $content );
+        $result = $this->sut->link( $content );
         $this->assertEquals(
-            'Here is some text to ignore ' . $this->createLink('PHP 5'),
+            'Here is some text to ignore ' . $this->createLink( 'PHP 5', 'NIVUK' ),
             $result
         );
 
@@ -139,8 +141,19 @@ class Bible_ReflinkerTest extends PHPUnit_Framework_TestCase {
         $this->sut->add_ignore( array(), 'PHP 5' );
 
         // test that this time we get the string without the link
-        $result = $this->sut->reflinker( $content );
+        $result = $this->sut->link( $content );
         $this->assertEquals( $content, $result );
+    }
+
+    public function testBibleVersionOption() {
+        // default 'NIVUK'
+        $actual = $this->sut->link( 'John 1:1' );
+        $this->assertEquals( self::createLink( 'John 1:1', 'NIVUK' ), $actual );
+
+        $this->sut->set_bible_version( 'KJV' );
+
+        $newVersion = $this->sut->link( 'John 1:1' );
+        $this->assertEquals( self::createLink( 'John 1:1', 'KJV' ), $newVersion );
     }
 
 }
